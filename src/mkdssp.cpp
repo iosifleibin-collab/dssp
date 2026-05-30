@@ -139,7 +139,7 @@ int d_main(int argc, const char *argv[])
 		if (cif::VERBOSE > 0)
 			std::cerr << "Loading file...";
 
-		f.load(in);
+		f = cif::pdb::read(config.operands().front());
 
 		if (cif::VERBOSE > 0)
 			std::cerr << " fixup file...";
@@ -152,8 +152,6 @@ int d_main(int argc, const char *argv[])
 	catch (const std::exception &e)
 	{
 		std::cerr << e.what() << '\n';
-
-		f = cif::pdb::read(config.operands().front());
 	}
 
 	// --------------------------------------------------------------------
