@@ -147,17 +147,21 @@ endif()
 
 add_executable(mkdssp ${CMAKE_CURRENT_SOURCE_DIR}/src/mkdssp.cpp)
 
+target_compile_definitions(mkdssp PRIVATE DATA_DIR="${CMAKE_INSTALL_PREFIX}/${CIFPP_SHARE_DIR}")
+
 target_link_libraries(mkdssp PRIVATE mcfp::mcfp dssp::dssp)
 
 if(USE_RSRC)
 	mrc_target_resources(mkdssp
 		${CIFPP_DATA_DIR}/mmcif_pdbx.dic
-		${CMAKE_CURRENT_SOURCE_DIR}/libdssp/mmcif_pdbx/dssp-extension.dic)
+		${CMAKE_CURRENT_SOURCE_DIR}/libdssp/mmcif_pdbx/dssp-extension.dic
+		${CMAKE_CURRENT_SOURCE_DIR}/assets/peptide-components.cif)
 else()
 	get_target_property(LIBDSSP_SOURCE_DIR dssp SOURCE_DIR)
 
 	install(FILES
 		${CMAKE_CURRENT_SOURCE_DIR}/libdssp/mmcif_pdbx/dssp-extension.dic
+		${CMAKE_CURRENT_SOURCE_DIR}/assets/peptide-components.cif
 		DESTINATION ${CIFPP_SHARE_DIR})
 
 	if(TARGET cifpp)
@@ -203,7 +207,7 @@ set(CPACK_SOURCE_TGZ ON)
 set(CPACK_SOURCE_TBZ2 OFF)
 set(CPACK_SOURCE_TXZ OFF)
 set(CPACK_SOURCE_TZ OFF)
-set(CPACK_SOURCE_IGNORE_FILES "/data/components.cif;/build;/.vscode;/.git")
+set(CPACK_SOURCE_IGNORE_FILES "/build;/.vscode;/.git")
 set(CPACK_PACKAGE_FILE_NAME "${PROJECT_NAME}-${PROJECT_VERSION}")
 set(CPACK_SOURCE_PACKAGE_FILE_NAME ${CPACK_PACKAGE_FILE_NAME})
 

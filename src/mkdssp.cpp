@@ -245,6 +245,8 @@ int main(int argc, const char *argv[])
 	{
 #if defined(DATA_DIR)
 		cif::add_data_directory(DATA_DIR);
+		if (fs::exists(fs::path(DATA_DIR) / "peptide-components.cif"))
+			cif::add_file_resource("components.cif", fs::path(DATA_DIR) / "peptide-components.cif");
 #endif
 		result = d_main(argc, argv);
 	}

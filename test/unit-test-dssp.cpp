@@ -86,7 +86,7 @@ int main(int argc, char *argv[])
 
 	cif::add_data_directory(gTestDir / "libdssp" / "mmcif_pdbx");
 
-	cif::add_file_resource("components.cif", gTestDir / "minimal-components.cif");
+	cif::add_file_resource("components.cif", gTestDir / ".." / "assets" / "peptide-components.cif");
 
 	return session.run();
 }
