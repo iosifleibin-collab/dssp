@@ -112,7 +112,3 @@ install(FILES
 	COMPONENT Devel
 )
 
-
-# set(CIFPP_DATA_DIR "${CMAKE_INSTALL_FULL_DATADIR}/libcifpp")
-install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/mmcif_pdbx/dssp-extension.dic"
-        DESTINATION share/libcifpp)

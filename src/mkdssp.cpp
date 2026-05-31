@@ -74,7 +74,7 @@ int d_main(int argc, const char *argv[])
 
 		mcfp::make_option("calculate-accessibility", "Default is to not calculate the surface accessibility when the output format is mmCIF"),
 
-		mcfp::make_option<std::string>("mmcif-dictionary", "Path to the mmcif_pdbx.dic file to use instead of default"),
+		mcfp::make_option<std::string>("assets-dir", "Path to the mmcif_pdbx.dic, peptide-components.cif and dssp-extension.dic files. By default, these are expected to be in the same directory as the executable."),
 
 		mcfp::make_option("help,h", "Display help message"),
 		mcfp::make_option("version", "Print version"),
@@ -113,16 +113,36 @@ int d_main(int argc, const char *argv[])
 	// --------------------------------------------------------------------
 
 	// private mmcif_pdbx dictionary?
-	if (config.has("mmcif-dictionary"))
+	if (config.has("assets-dir"))
 	{
-		fs::path mmcif_dict = config.get<std::string>("mmcif-dictionary");
+		fs::path assets_dir = config.get<std::string>("assets-dir");
 
-		cif::add_file_resource("mmcif_pdbx.dic", mmcif_dict);
+		if (not fs::exists(assets_dir) or not fs::is_directory(assets_dir))
+		{
+			std::cerr << "Assets directory " << assets_dir << " does not exist\n";
+			exit(1);
+		}
+		if (not fs::exists(assets_dir / "mmcif_pdbx.dic")) {
+			std::cerr << "mmcif_pdbx.dic not found in assets directory\n";
+			exit(1);
+		}
+		if (not fs::exists(assets_dir / "dssp-extension.dic")) {
+			std::cerr << "dssp-extension.dic not found in assets directory\n";
+			exit(1);
+		}
+		if (not fs::exists(assets_dir / "peptide-components.cif")) {
+			std::cerr << "peptide-components.cif not found in assets directory\n";
+			exit(1);	
+		}
 
-		// Try to be smart, maybe dssp-extension.dic is at that location as well?
-		auto dir = fs::canonical(mmcif_dict.parent_path());
-		if (auto dssp_dict = cif::load_resource("dssp-extension.dic"); dssp_dict == nullptr and fs::exists(dir / "dssp-extension.dic"))
-			cif::add_data_directory(dir);
+		cif::add_data_directory(assets_dir);
+		cif::add_file_resource("mmcif_pdbx.dic", assets_dir / "mmcif_pdbx.dic");
+		cif::add_file_resource("dssp-extension.dic", assets_dir / "dssp-extension.dic");
+		cif::add_file_resource("components.cif", assets_dir / "peptide-components.cif");
+	}
+	else {
+		std::cerr << "Please specify an assets directory using the --assets-dir option\n";
+		exit(1);
 	}
 
 	cif::file f;
@@ -136,22 +156,20 @@ int d_main(int argc, const char *argv[])
 			exit(1);
 		}
 
-		if (cif::VERBOSE > 0)
+		if (cif::VERBOSE > 0) {
 			std::cerr << "Loading file...";
+		}
 
 		f = cif::pdb::read(config.operands().front());
-
-		if (cif::VERBOSE > 0)
-			std::cerr << " fixup file...";
-
-		cif::pdb::fixup_pdbx(f);
-
-		if (cif::VERBOSE > 0)
+		
+		if (cif::VERBOSE > 0) {
 			std::cerr << " done\n";
+		}
 	}
 	catch (const std::exception &e)
 	{
 		std::cerr << e.what() << '\n';
+		exit(1);
 	}
 
 	// --------------------------------------------------------------------
@@ -241,11 +259,6 @@ int main(int argc, const char *argv[])
 
 	try
 	{
-#if defined(DATA_DIR)
-		cif::add_data_directory(DATA_DIR);
-		if (fs::exists(fs::path(DATA_DIR) / "peptide-components.cif"))
-			cif::add_file_resource("components.cif", fs::path(DATA_DIR) / "peptide-components.cif");
-#endif
 		result = d_main(argc, argv);
 	}
 	catch (const std::exception &ex)
